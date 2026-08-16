@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sig Verify</title>
+  <style>
+:root { --bg:#0a0a0f; --fg:#e0e0e0; --accent:#00d4aa; --muted:#9090a0; --card:#1a1a25; --bd:#2a2a3a; }
+body.dark-mode, body { font-family: system-ui, sans-serif; background:var(--bg); color:var(--fg); margin:0; padding:1.5rem; }
+h1 { color:var(--accent); font-size:1.25rem; }
+button, select { background:var(--card); color:var(--fg); border:1px solid var(--bd); padding:.5rem .8rem; margin:.25rem .25rem 0 0; }
+#log { white-space:pre-wrap; font:12px ui-monospace,monospace; color:var(--muted); margin-top:1rem; }
+.card { border:1px solid var(--bd); padding:.75rem; margin:.4rem 0; border-radius:8px; }
+.row { display:flex; flex-wrap:wrap; gap:.5rem; }
+</style>
+</head>
+<body>
+<h1>Signature verify</h1>
+<p>Reads signatures/valid and revoked. Queues verae.sig.verify.</p>
+<button id="scan">Scan</button>
+<label>SHA-256 <input id="hash" value="sha256:doc"/></label>
+<label>Sig id <input id="sid" value="sig1"/></label>
+<button id="go">Enqueue verify</button>
+<div id="out"></div>
+<div id="log"></div>
+<script src="sdk.js"></script>
+<script>
+  const log = (m) => { document.getElementById("log").textContent += m + "\n"; };
+  document.getElementById("scan").onclick = async () => {
+    const c = window.VeraeSDK.createClient();
+    try {
+      const v = (await c.list("/signatures/valid")).files;
+      const r = (await c.list("/signatures/revoked")).files;
+      document.getElementById("out").innerHTML =
+        "<div class=\"card\">valid: " + v.join(", ") + "</div>" +
+        "<div class=\"card\">revoked: " + r.join(", ") + "</div>";
+    } catch (e) { log(e.message); }
+  };
+  document.getElementById("go").onclick = async () => {
+    const S = window.VeraeSDK;
+    const c = S.createClient();
+    const sid = document.getElementById("sid").value.trim();
+    const hash = document.getElementById("hash").value.trim();
+    try {
+      const env = S.makeEnvelope("verae.sig.verify", { object_sha256: hash, signature_id: sid }, sid + ".verify.json");
+      await S.enqueue(c, sid + "-verify", env);
+      log("queued verify " + sid);
+    } catch (e) { log(e.message); }
+  };
+</script>
+
+</body>
+</html>

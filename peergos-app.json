@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "displayName": "Sig Verify",
+  "description": "List valid/revoked signatures; enqueue verae.sig.verify",
+  "version": "0.1.0",
+  "author": "Verae",
+  "launchable": true,
+  "folderAction": false,
+  "fileExtensions": [],
+  "permissions": [
+    "STORE_APP_DATA"
+  ]
+}
